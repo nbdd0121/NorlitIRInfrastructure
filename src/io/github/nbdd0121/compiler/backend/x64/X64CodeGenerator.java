@@ -666,7 +666,7 @@ public class X64CodeGenerator extends CodeGenerator {
 					assembly.add(new X64Instruction("ret"));
 					break;
 				}
-				case GETELEMENTPTR: {
+				case INDEX: {
 					PointerType type = (PointerType) ins.op[0].getType();
 					if (ins.op.length != 2 || type.getRefer().getByteSize() != 1) {
 						throw new UnsupportedOperationException();

@@ -53,7 +53,7 @@ public class AliasAnalysis {
 						break;
 					}
 					// TODO
-					case GETELEMENTPTR: {
+					case INDEX: {
 						AliasAnnotation anno = getAnnotation(ins.dest);
 						anno.location = Location.anywhere(refer.getByteSize());
 						break;

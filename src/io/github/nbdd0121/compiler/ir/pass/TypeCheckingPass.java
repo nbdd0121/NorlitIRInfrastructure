@@ -145,20 +145,17 @@ public class TypeCheckingPass extends BlockLocalPass {
 		}
 	}
 
-	public void checkGetElementPtr(Instruction ins) {
+	public void checkIndex(Instruction ins) {
 		if (ins.dest == null) {
 			throw new RuntimeException(
-					"Target operand is required in getelementptr operation");
+					"Target operand is required in index operation");
 		}
-		if (ins.op.length < 2) {
+		if (ins.op.length != 2) {
 			throw new RuntimeException(
-					"At least 2 arguments are required by getelementptr operation");
+					"Exactly 2 arguments are required by index operation");
 		}
 		checkPointer(ins.op[0].getType());
-		for (int i = 1; i < ins.op.length; i++) {
-			checkInteger(ins.op[i].getType());
-		}
-		// TODO Check more stuff
+		checkInteger(ins.op[1].getType());
 	}
 
 	private void checkReturn(Instruction ins) {
@@ -181,8 +178,8 @@ public class TypeCheckingPass extends BlockLocalPass {
 			checkType(ret, ins.op[0].getType());
 		}
 	}
-	
-	private void checkArithmetic(Instruction ins){
+
+	private void checkArithmetic(Instruction ins) {
 		if (ins.dest == null) {
 			throw new RuntimeException(
 					"Target operand is required in arithmetic operations");
@@ -226,8 +223,8 @@ public class TypeCheckingPass extends BlockLocalPass {
 					checkArithmetic(ins);
 					// TODO Could be implemented after getelementptr
 					break;
-				case GETELEMENTPTR:
-					checkGetElementPtr(ins);
+				case INDEX:
+					checkIndex(ins);
 					break;
 				default:
 					// break;

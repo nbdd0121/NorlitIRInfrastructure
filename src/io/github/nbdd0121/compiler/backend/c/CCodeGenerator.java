@@ -261,7 +261,7 @@ public class CCodeGenerator extends CodeGenerator {
 								+ ";");
 					break;
 				}
-				case GETELEMENTPTR: {
+				case INDEX: {
 					if (ins.op.length != 2) {
 						throw new UnsupportedOperationException();
 					}

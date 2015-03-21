@@ -272,9 +272,8 @@ public class Parser {
 				case "return": {
 					return new Instruction(Opcode.RETURN, dest, operandArr);
 				}
-				case "getelementptr": {
-					return new Instruction(Opcode.GETELEMENTPTR, dest,
-							operandArr);
+				case "index": {
+					return new Instruction(Opcode.INDEX, dest, operandArr);
 				}
 				case "jmp": {
 					if (operands.size() == 1) {

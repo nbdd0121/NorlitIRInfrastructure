@@ -10,9 +10,9 @@ public class Instruction {
 
 	public static enum Opcode {
 		/* Pointer Arithmetic */
-		GETELEMENTPTR,
+		INDEX("index"),
 
-		NOP, ALLOCA, LOAD, STORE,
+		NOP("nop"), ALLOCA("alloca"), LOAD("load"), STORE("store"),
 		/* Assignment */
 		ASSIGN,
 		/* Arithmetic */
@@ -22,9 +22,9 @@ public class Instruction {
 		/* Bitwise/Logical Operation */
 		AND("&"), OR("|"), XOR("^"), NEG("-"),
 		/* Function call */
-		CALL, RETURN,
+		CALL("call"), RETURN("return"),
 		/* Jump */
-		JMP, COND_JMP;
+		JMP("jmp"), COND_JMP("jmp");
 
 		String desc;
 
@@ -55,16 +55,19 @@ public class Instruction {
 	public String toString() {
 		switch (type) {
 			case ALLOCA:
-				if (op.length == 2)
-					return dest + " = alloca " + StringUtil.join(op, ", ");
-				else
-					return dest + " = alloca " + op[0];
 			case LOAD:
-				return dest + " = load " + op[0];
 			case STORE:
-				return "store " + op[0] + ", " + op[1];
-			case GETELEMENTPTR:
-				return dest + " = getelementptr " + StringUtil.join(op, ", ");
+			case INDEX:
+			case NOP:
+			case COND_JMP:
+			case JMP:
+			case RETURN:
+			case CALL:
+				if (dest != null)
+					return dest + " = " + type + " "
+							+ StringUtil.join(op, ", ");
+				else
+					return type + " " + StringUtil.join(op, ", ");
 			case ADD:
 			case SUB:
 			case MUL:
@@ -84,22 +87,6 @@ public class Instruction {
 				return dest + " = " + type + op[0];
 			case ASSIGN:
 				return dest + " = " + op[0];
-			case CALL:
-				if (dest != null)
-					return dest + " = call " + StringUtil.join(op, ", ");
-				else
-					return "call " + StringUtil.join(op, ", ");
-			case JMP:
-				return "jmp " + op[0];
-			case COND_JMP:
-				return "jmp " + op[0] + ", " + op[1] + ", " + op[2];
-			case NOP:
-				return "nop";
-			case RETURN:
-				if (op.length == 1)
-					return "return " + op[0];
-				else
-					return "return";
 			default:
 				return super.toString();
 		}
@@ -156,14 +143,10 @@ public class Instruction {
 		}
 		return new Instruction(Opcode.STORE, null, dest, value);
 	}
-	
-	public static Instruction getelementptr(Local ret, Value val, Value... idx) {
-		Value[] o = new Value[idx.length + 1];
-		o[0] = val;
-		System.arraycopy(idx, 0, o, 1, idx.length);
-		return new Instruction(Opcode.GETELEMENTPTR, ret, o);
+
+	public static Instruction index(Local ret, Value val, Value idx) {
+		return new Instruction(Opcode.INDEX, ret, val, idx);
 	}
-	
 
 	public static Instruction call(Local ret, Value op1, Value... ops) {
 		Value[] o = new Value[ops.length + 1];
@@ -171,11 +154,10 @@ public class Instruction {
 		System.arraycopy(ops, 0, o, 1, ops.length);
 		return new Instruction(Opcode.CALL, ret, o);
 	}
-	
+
 	public static Instruction voidCall(Value op1, Value... ops) {
 		return call(null, op1, ops);
 	}
-
 
 	public static Instruction jmp() {
 		return new Instruction(Opcode.JMP, null, (Value) null);

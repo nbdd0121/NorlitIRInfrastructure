@@ -93,6 +93,29 @@ public class PartialConstantFolding extends BlockLocalPass {
 					}
 					break;
 				}
+				case INDEX: {
+					if (partialConstantForm(ins)) {
+						if (declaration.containsKey(ins.op[0])) {
+							Instruction instruction = declaration
+									.get(ins.op[0]);
+							if (instruction.type == Opcode.INDEX) {
+								System.out
+										.print("Partial constant folding from "
+												+ ins);
+								ins.op[0] = instruction.op[0];
+								ins.op[1] = new IntegerConstant(
+										(IntegerType) ins.op[1].getType(),
+										((IntegerConstant) instruction.op[1])
+												.getValue()
+												.add(((IntegerConstant) ins.op[1])
+														.getValue()));
+								System.out.println(" to " + ins);
+							}
+						}
+						declaration.put(ins.dest, ins);
+					}
+					break;
+				}
 				default:
 					break;
 			}
