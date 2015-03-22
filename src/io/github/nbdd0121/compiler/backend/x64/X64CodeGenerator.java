@@ -18,7 +18,9 @@ import io.github.nbdd0121.compiler.ir.Module;
 import io.github.nbdd0121.compiler.ir.Value;
 import io.github.nbdd0121.compiler.ir.analysis.LifetimeAnalysis;
 import io.github.nbdd0121.compiler.ir.annotation.LiveVariableAnnotation;
+import io.github.nbdd0121.compiler.ir.constant.Constant;
 import io.github.nbdd0121.compiler.ir.constant.IntegerConstant;
+import io.github.nbdd0121.compiler.ir.constant.StringConstant;
 import io.github.nbdd0121.compiler.ir.decl.VariableDeclaration;
 import io.github.nbdd0121.compiler.ir.decl.VariableDefinition;
 import io.github.nbdd0121.compiler.ir.function.Block;
@@ -200,7 +202,6 @@ public class X64CodeGenerator extends CodeGenerator {
 		}
 		for (X64Location loc : volatileRegisters) {
 			if (!pegged.contains(loc)) {
-				spillRegister(loc);
 				return loc;
 			}
 		}
@@ -319,8 +320,9 @@ public class X64CodeGenerator extends CodeGenerator {
 	 *            Register to peg
 	 */
 	public void pegRegister(X64Location reg) {
-		if (reg.isRegister())
+		if (reg.isRegister()) {
 			pegged.add(reg);
+		}
 	}
 
 	/**
@@ -330,7 +332,9 @@ public class X64CodeGenerator extends CodeGenerator {
 	 *            Register to peg
 	 */
 	public void unpegRegister(X64Location reg) {
-		pegged.remove(reg);
+		if (reg.isRegister()) {
+			pegged.remove(reg);
+		}
 	}
 
 	/**
@@ -356,6 +360,11 @@ public class X64CodeGenerator extends CodeGenerator {
 			variableLocation.put(l, loc);
 			registerValue.put(loc, l);
 			// System.out.println("; " + loc + " is allocated to " + l);
+			return loc;
+		} else if (v instanceof Global) {
+			X64Location loc = allocRegister();
+			registerValue.put(loc, v);
+			mov(loc, X64Location.newImm("" + ((Global) v).getName()));
 			return loc;
 		} else if (v instanceof IntegerConstant) {
 			return X64Location.newImm("" + ((IntegerConstant) v).longValue());
@@ -384,6 +393,8 @@ public class X64CodeGenerator extends CodeGenerator {
 			registerValue.put(loc, l);
 			// System.out.println("; " + loc + " is allocated to " + l);
 			return loc;
+		} else if (v instanceof Global) {
+			return X64Location.newImm("" + ((Global) v).getName());
 		} else if (v instanceof IntegerConstant) {
 			return X64Location.newImm("" + ((IntegerConstant) v).longValue());
 		} else {
@@ -398,10 +409,25 @@ public class X64CodeGenerator extends CodeGenerator {
 			} else if (decl instanceof VariableDeclaration) {
 				System.out.println("[extern " + decl.getVariable().name + "]");
 			} else if (decl instanceof VariableDefinition) {
-				throw new UnsupportedOperationException(decl.toString());
+				generate((VariableDefinition) decl);
 			} else {
 				throw new AssertionError();
 			}
+		}
+	}
+
+	private void generate(VariableDefinition decl) {
+		System.out.println("[global " + decl.getVariable().name + "]");
+		Constant val = decl.getValue();
+		if (val instanceof StringConstant) {
+			String str = ((StringConstant) val).stringValue();
+			System.out.print(decl.getVariable().name + "\tdb ");
+			for (byte b : str.getBytes()) {
+				System.out.print(b + ", ");
+			}
+			System.out.println("0");
+		} else {
+			throw new UnsupportedOperationException(decl.toString());
 		}
 	}
 
@@ -448,9 +474,8 @@ public class X64CodeGenerator extends CodeGenerator {
 			return;
 		}
 		if (dest.isMemory() && src.isMemory()) {
-			mov(X64Location.RAX, src);
-			mov(dest, X64Location.RAX);
-			return;
+			throw new RuntimeException("Unsupported operation moving from "
+					+ src + " to " + dest);
 		}
 		if (dest.getSize() == src.getSize() || src.isImmediate()) {
 			assembly.add(new X64Instruction("mov", dest, src));
@@ -514,8 +539,7 @@ public class X64CodeGenerator extends CodeGenerator {
 
 		/* Shadow space */
 		assembly.add(new X64Instruction("sub", RSP, newImm("32")));
-		String funcName = ((Global) ins.op[0]).name;
-		assembly.add(new X64Instruction("call", newImm(funcName)));
+		assembly.add(new X64Instruction("call", getLocation(ins.op[0])));
 		assembly.add(new X64Instruction("add", RSP, newImm("32")));
 	}
 
@@ -668,7 +692,8 @@ public class X64CodeGenerator extends CodeGenerator {
 				}
 				case INDEX: {
 					PointerType type = (PointerType) ins.op[0].getType();
-					if (ins.op.length != 2 || type.getRefer().getByteSize() != 1) {
+					if (ins.op.length != 2
+							|| type.getRefer().getByteSize() != 1) {
 						throw new UnsupportedOperationException();
 					}
 					/*

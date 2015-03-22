@@ -24,7 +24,7 @@ public class AliasAnnotation extends Annotation {
 		int offset;
 		/**
 		 * Size of the memory block that pointer points to. This must be
-		 * positive.
+		 * positive. -1 means that we don't know the size
 		 */
 		int size;
 

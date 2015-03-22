@@ -121,10 +121,17 @@ public class TypeCheckingPass extends BlockLocalPass {
 					"At least 1 argument is required by call operation");
 		}
 		Type type = ins.op[0].getType();
-		if (!(type instanceof FunctionType)) {
-			throw new RuntimeException("Cannot call on non-function type");
+		if (!(type instanceof PointerType)) {
+			throw new RuntimeException(
+					"Cannot call on non-function pointer type");
 		}
-		FunctionType func = (FunctionType) type;
+		Type ptr = ((PointerType) type).getRefer();
+		if (!(ptr instanceof FunctionType)) {
+			throw new RuntimeException(
+					"Cannot call on non-function pointer type");
+		}
+
+		FunctionType func = (FunctionType) ptr;
 
 		if (ins.dest != null) {
 			if (func.getReturnType() instanceof VoidType) {
@@ -163,7 +170,7 @@ public class TypeCheckingPass extends BlockLocalPass {
 			throw new RuntimeException(
 					"Target operand is not allowed in return operation");
 		}
-		FunctionType type = (FunctionType) function.getVariable().getType();
+		FunctionType type = function.getType();
 		Type ret = type.getReturnType();
 		if (ret instanceof VoidType) {
 			if (ins.op.length != 0) {

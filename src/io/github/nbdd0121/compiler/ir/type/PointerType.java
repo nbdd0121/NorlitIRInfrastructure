@@ -38,5 +38,6 @@ public class PointerType extends Type {
 	public int getByteSize(){
 		return Model.getModel().getMachineWordSize();
 	}
+	
 
 }

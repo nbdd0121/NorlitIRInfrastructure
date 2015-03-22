@@ -1,5 +1,6 @@
 package io.github.nbdd0121.compiler.ir.type;
 
+import java.util.Objects;
 
 public class FloatingType extends Type {
 
@@ -26,6 +27,23 @@ public class FloatingType extends Type {
 	@Override
 	public int getByteSize() {
 		return (fracBits + expBits + 1 + 7) / 8;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		} else if (o instanceof FloatingType) {
+			FloatingType t = (FloatingType) o;
+			return fracBits == t.fracBits && expBits == t.expBits;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(fracBits, expBits);
 	}
 
 }

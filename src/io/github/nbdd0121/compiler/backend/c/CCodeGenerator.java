@@ -118,7 +118,7 @@ public class CCodeGenerator extends CodeGenerator {
 		if (v instanceof Local) {
 			return mangleLocal((Local) v);
 		} else if (v instanceof Global) {
-			return mangleName(((Global) v).getName(), false);
+			return "(&" + mangleName(((Global) v).getName(), false) + ")";
 		} else if (v instanceof IntegerConstant) {
 			return ((IntegerConstant) v).getValue().toString();
 		} else {
@@ -131,7 +131,8 @@ public class CCodeGenerator extends CodeGenerator {
 	}
 
 	private void defineGlobal(Global l) {
-		System.out.print(mangleTypedName(l.getType(),
+		System.out.print(mangleTypedName(
+				((PointerType) l.getType()).getRefer(),
 				mangleName(l.getName(), false)));
 	}
 
@@ -155,7 +156,7 @@ public class CCodeGenerator extends CodeGenerator {
 	private void generate(Function func) {
 		Global var = func.getVariable();
 		String name = mangleName(var.getName(), false);
-		FunctionType type = (FunctionType) func.getVariable().getType();
+		FunctionType type = func.getType();
 		System.out.print(mangleType(type.getReturnType()) + " " + name + "(");
 		if (type.getParameters().size() == 0) {
 			System.out.println("void) {");

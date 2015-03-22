@@ -3,6 +3,8 @@ package io.github.nbdd0121.compiler.ir.function;
 import io.github.nbdd0121.compiler.ir.Declaration;
 import io.github.nbdd0121.compiler.ir.Global;
 import io.github.nbdd0121.compiler.ir.Instruction;
+import io.github.nbdd0121.compiler.ir.type.FunctionType;
+import io.github.nbdd0121.compiler.ir.type.PointerType;
 import io.github.nbdd0121.compiler.ir.type.Type;
 
 import java.util.ArrayList;
@@ -99,14 +101,18 @@ public class Function extends Declaration {
 	}
 
 	public void addBlock(Block lbl) {
-//		Instruction last = current.getLastInstruction();
-//		if (last == null || !last.isBranchInstruction()) {
-//			Instruction jmp = Instruction.jmp();
-//			jmp.op[0] = lbl;
-//			emit(jmp);
-//		}
+		// Instruction last = current.getLastInstruction();
+		// if (last == null || !last.isBranchInstruction()) {
+		// Instruction jmp = Instruction.jmp();
+		// jmp.op[0] = lbl;
+		// emit(jmp);
+		// }
 		current = lbl;
 		blocks.add(current);
+	}
+
+	public FunctionType getType() {
+		return (FunctionType) ((PointerType) variable.getType()).getRefer();
 	}
 
 }

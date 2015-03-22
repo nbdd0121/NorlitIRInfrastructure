@@ -3,6 +3,7 @@ package io.github.nbdd0121.compiler.ir.type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import com.nwgjb.commons.StringUtil;
 
@@ -35,11 +36,19 @@ public class FunctionType extends Type {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof FunctionType)) {
+		if (obj == this) {
+			return true;
+		} else if (!(obj instanceof FunctionType)) {
 			return false;
 		}
 		FunctionType func = (FunctionType) obj;
-		return ret.equals(func.ret) || param.equals(func.param);
+		return vaarg == func.vaarg && ret.equals(func.ret)
+				&& param.equals(func.param);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(ret, param, vaarg);
 	}
 
 	@Override

@@ -44,7 +44,7 @@ public class AliasAnalysis {
 					}
 					case LOAD: {
 						AliasAnnotation anno = getAnnotation(ins.dest);
-						anno.location = Location.anywhere(refer.getByteSize());
+						anno.location = Location.anywhere(-1);
 						break;
 					}
 					case ASSIGN: {

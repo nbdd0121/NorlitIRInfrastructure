@@ -1,5 +1,7 @@
 package io.github.nbdd0121.compiler.ir.type;
 
+import java.util.Objects;
+
 public class ArrayType extends AggregateType {
 
 	Type refer;
@@ -17,12 +19,19 @@ public class ArrayType extends AggregateType {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof ArrayType) {
+		if (o == this) {
+			return true;
+		} else if (o instanceof ArrayType) {
 			ArrayType t = (ArrayType) o;
 			return t.refer.equals(refer) && t.dimension == dimension;
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(refer, dimension);
 	}
 
 	@Override
